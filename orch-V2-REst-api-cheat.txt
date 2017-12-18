@@ -1,0 +1,632 @@
+### use this to manage orchestration V2
+
+export OPC_API=https://api-z17.compute.em2.oraclecloud.com/
+echo "export OPC_API=https://api-z17.compute.em2.oraclecloud.com/" >> /home/oracle/.bash_profile
+export OPC_USER=/Compute-secdomain/user
+echo "export OPC_USER=/Compute-secdomain/user" >> /home/oracle/.bash_profile
+
+export OPC_USERPASSWD=password
+mkdir -p   /home/oracle/cloud-scripts
+echo $OPC_USERPASSWD >  /home/oracle/cloud-scripts/Cloud_passwd
+chmod 600 /home/oracle/cloud-scripts/Cloud_passwd
+#cat /home/oracle/cloud-scripts/Cloud_passwd
+
+mkdir /home/oracle/opc
+cd opc
+
+vi profile-eugene
+
+{
+  "global": {
+    "debug-requests": false
+  },
+  "compute": {
+    "user": "/Compute-secdomain/user",
+    "password-file": "/home/oracle/cloud-scripts/Cloud_passwd",
+    "endpoint": "api-z17.compute.em2.oraclecloud.com"
+  }
+}
+
+chmod 600 /home/oracle/opc/profile-eugene
+export OPC_PROFILE_FILE="profile-eugene"
+export OPC_PROFILE_DIRECTORY="/home/oracle/opc"
+opc -f text compute image-lists list /oracle/public/
+opc -f json compute image-lists list /oracle/public/
+
+### generate ssh keys on your linux
+ssh-keygen -t rsa -f  /home/oracle/file1
+ssh-keygen -t rsa -f  /home/oracle/file2
+ssh-keygen -t rsa -f  /home/oracle/file3
+opc -f json compute ssh-keys add /Compute-secdomain/user/file1  file:///home/oracle/file1.pub
+opc -f json compute ssh-keys add /Compute-secdomain/user/file2  file:///home/oracle/file2.pub
+opc -f json compute ssh-keys add /Compute-secdomain/user/file3  file:///home/oracle/file3.pub
+
+## list the keys
+opc -f json compute ssh-keys list /Compute-secdomain/user
+## discover the list of your keys
+opc -f json compute ssh-keys discover /Compute-secdomain/user
+##  get the state of one key
+opc -f json compute ssh-keys get /Compute-secdomain/user/file2
+### delete a key
+opc -f json compute ssh-keys delete /Compute-secdomain/user/file2
+
+## create ssh-key
+## add ssh-key to cloud
+## create storage volume
+## create a security list
+## create ip reservation
+
+opc -f json compute storage-volumes add /Compute-secdomain/user/vol1 \
+/oracle/public/storage/default 10G \
+--description 'Cloud Labs Block Storage' --tags 'Cloud Labs.'
+##  create a bootable storage volume
+opc -f json compute storage-volumes add /Compute-secdomain/user/vol2 \
+/oracle/public/storage/default 25G \
+--description 'Cloud Labs Block Storage Bootable Block Storage' \
+--tags 'Cloud Labs Block Storage.' --bootable --imagelist /oracle/public/oel_6.6_20GB_x11_RD
+### list the storage volumes
+opc -f table -F name,status compute storage-volumes list /Compute-secdomain/user
+### discover storage volumes in the container
+opc -f json compute storage-volumes discover /Compute-secdomain/user
+### get the details of the storage volumes ..
+opc -f json compute storage-volumes get /Compute-secdomain/user
+
+## create a security list
+opc -f json compute sec-lists add /Compute-secdomain/user/deny-traffic  \
+--description 'Deny traffic' --policy deny --outbound-cidr-policy deny
+opc -f json compute sec-lists add /Compute-secdomain/user/allow-traffic  \
+--description 'Allow traffic' --policy permit --outbound-cidr-policy permit
+## list the security list of the container
+opc -f json compute sec-lists list /Compute-secdomain/user
+## discover security lists
+opc -f json compute sec-lists discover /Compute-secdomain/user
+## update security list
+opc compute sec-lists update /Compute-secdomain/user/allow-traffic \
+ --policy permit --outbound-cidr-policy permit --description "updated security list"
+## delete security list
+opc compute sec-lists delete /Compute-secdomain/user/allow-traffic
+## create ip reservation
+opc -f json compute ip-reservations add /Compute-secdomain/user/prod1_ipres \
+/oracle/public/ippool --tags 'production'
+## list the ip reservation
+opc -f table -F name,ip compute ip-reservations list /Compute-secdomain/user
+## get details
+opc -f table -F used compute ip-reservations get /Compute-secdomain/user/prod1_ipres
+## delete ip reservation
+opc compute ip-reservations delete /Compute-secdomain/user/prod1_ipres
+
+## add orchestration
+opc -f json compute orchestrations add --request-body=./orch-file-for-V2-cheat.json
+
+
+## security rule
+opc -f json compute sec-rules add /Compute-secdomain/user/ouopc028-2-secdomain \
+permit /oracle/public/ssh \
+seclist:/Compute-ouopc028/user/dev-ouopc028  \
+seclist:/Compute-secdomain/user/prod-secdomain \
+--disabled=false \
+--description 'Permit traffic from the Internet to the production seclist
+
+Note:
+
+If the outbound_cidr_policy for a security list (seclist) is set to DENY, you can create security rules (secrules) to enable outbound communication from the instances within that security list to public IP addresses (seciplists). This way, you can create holes in the outbound firewall. You cannot create security rules to enable outbound communication from a security list to public IP addresses if the outbound_cidr_policy for the security list is set to PERMIT.
+
+Sample Output
+
+{
+   "account": "/Compute-acme/default",
+   "name": "/Compute-acme/jack.jones@example.com/deny-traffic",
+   "uri": "https://api-z999.compute.us0.oraclecloud.com/seclist/Compute-acme/jack.jones@example.com/deny-traffic",
+   "outbound_cidr_policy": "DENY",
+   "policy": "DENY",
+   "description": "Deny traffic"
+}
+
+sec-lists list
+
+Retrieves details of the security lists that are in the specified container and match the specified query criteria. If you don't specify any query criteria, then details of all the security lists in the container are displayed. Use the list command to validate the results of add, update, and delete operations.
+
+Required Role
+
+To complete this task, you must have the Compute_Monitor or Compute_Operations role. If this role isn’t assigned to you or you’re not sure, then ask your system administrator to ensure that the role is assigned to you in Oracle Cloud My Services. See Modifying User Roles in Managing and Monitoring Oracle Cloud.
+
+Syntax
+
+opc compute sec-lists list container [--name name]
+
+For help with the parameters and options of this command, run the command with the -h option.
+
+Example
+
+The following example retrieves the details of all the security lists in the /Compute-acme container.
+
+opc -f json compute sec-lists list /Compute-acme
+
+Sample Output
+
+{
+ "result": [
+  {
+   "account": "/Compute-acme/default",
+   "description": "deny traffic",
+   "name": "/Compute-acme/jack.jones@example.com/deny-traffic",
+   "outbound_cidr_policy": "DENY",
+   "policy": "DENY",
+   "uri": "https://api-z999.compute.us0.oraclecloud.com/seclist/Compute-acme/jack.jones@example.com/deny-traffic"
+  },
+  {
+   "account": "/Compute-acme/default",
+   "description": "",
+   "name": "/Compute-acme/default/default",
+   "outbound_cidr_policy": "PERMIT",
+   "policy": "DENY",
+   "uri": "https://api-z999.compute.us0.oraclecloud.com/seclist/Compute-acme/default/default"
+  }
+  ]
+}
+
+sec-lists discover
+
+Required Role
+
+To complete this task, you must have the Compute_Monitor or Compute_Operations role. If this role isn’t assigned to you or you’re not sure, then ask your system administrator to ensure that the role is assigned to you in Oracle Cloud My Services. See Modifying User Roles in Managing and Monitoring Oracle Cloud.
+
+Syntax
+
+opc compute sec-lists discover container
+
+For help with the parameters and options of this command, run the command with the -h option.
+
+Example
+
+opc -f json compute sec-lists discover /Compute-acme/jack.jones@example.com
+
+Sample Output
+
+{
+ "result": [
+  "/Compute-acme/jack.jones@example.com/deny",
+  "/Compute-acme/jack.jones@example.com/permitall"
+  ]
+}
+
+sec-lists get
+
+Retrieves information about the specified security list.
+
+Required Role
+
+To complete this task, you must have the Compute_Monitor or Compute_Operations role. If this role isn’t assigned to you or you’re not sure, then ask your system administrator to ensure that the role is assigned to you in Oracle Cloud My Services. See Modifying User Roles in Managing and Monitoring Oracle Cloud.
+
+Syntax
+
+opc compute sec-lists get name
+
+For help with the parameters and options of this command, run the command with the -h option.
+
+Example
+
+This command retrieves the name and policy attributes of the /Compute-acme/jack.jones@example.com/permitall seclist.
+
+opc -f json compute sec-lists get /Compute-acme/jack.jones@example.com/deny
+
+Sample Output
+
+{
+   "account": "/Compute-acme/default",
+   "name": "/Compute-acme/jack.jones@example.com/deny-traffic",
+   "uri": "https://api-z999.compute.us0.oraclecloud.com/seclist/Compute-acme/jack.jones@example.com/deny-traffic",
+   "outbound_cidr_policy": "DENY",
+   "policy": "DENY",
+   "description": "Deny traffic"
+}
+
+sec-lists update
+
+Updates inbound policy, outbound policy, and description for the specified security list.
+
+Required Role
+
+To complete this task, you must have the Compute_Operations role. If this role isn’t assigned to you or you’re not sure, then ask your system administrator to ensure that the role is assigned to you in Oracle Cloud My Services. See Modifying User Roles in Managing and Monitoring Oracle Cloud.
+
+Syntax
+
+opc compute sec-lists update name [--policy inbound_policy] [--outbound_cidr_policy outbound_policy] [--description 'description']
+
+For help with the parameters and options of this command, run the command with the -h option.
+
+Example
+
+This command changes the inbound policy and outbound policy of the /Compute-acme/jack.jones@example.com/deny security list to permit and updates the description.
+
+opc compute sec-lists update /Compute-acme/jack.jones@example.com/deny --policy permit --outbound-cidr-policy permit --description "updated security list"
+
+Sample Output
+
+{
+   "account": "/Compute-acme/default",
+   "name": "/Compute-acme/jack.jones@example.com/deny",
+   "uri": "https://api-z999.compute.us0.oraclecloud.com/seclist/Compute-acme/jack.jones@example.com/deny",
+   "outbound_cidr_policy": "PERMIT",
+   "policy": "PERMIT",
+   "description": "updated security list"
+}
+
+sec-lists delete
+
+Deletes the specified security list. No response is returned.
+
+Note that a security list that’s associated with instances or is used in security rules can’t be deleted.
+
+Required Role
+
+To complete this task, you must have the Compute_Operations role. If this role isn’t assigned to you or you’re not sure, then ask your system administrator to ensure that the role is assigned to you in Oracle Cloud My Services. See Modifying User Roles in Managing and Monitoring Oracle Cloud.
+
+Syntax
+
+opc compute sec-lists delete name
+
+For help with the parameters and options of this command, run the command with the -h option.
+
+Example
+
+opc compute sec-lists delete /Compute-acme/jack.jones@example.com/deny
+
+
+
+Sample Output
+
+{
+ "account": "/Compute-acme/default",
+ "bootable": true,
+ "description": "Accounting Department Block Storage",
+ "hypervisor": null,
+ "imagelist": "/oracle/public/oel_6.4_2GB",
+ "imagelist_entry": 1,
+ "machineimage_name": "/oracle/public/oel_6.4_2GB",
+ "managed": true,
+ "name": "/Compute-acme/jack.jones@example.com/vol2",
+ "platform": "linux",
+ "properties": [
+  "/oracle/public/storage/default"
+ ],
+ "quota": null,
+ "shared": false,
+ "size": "10737418240",
+ "snapshot": null,
+ "snapshot_account": null,
+ "snapshot_id": null,
+ "status": "Initializing",
+ "status_detail": "The storage volume is currently being initialized.",
+ "status_timestamp": "2017-02-08T06:20:02Z",
+ "storage_pool": null,
+ "tags": [
+  "Accounting Dept."
+ ],
+ "uri": "https://api-z999.compute.us0.oraclecloud.com/storage/volume/Compute-acme/jack.jones@example.com/vol2",
+ "writecache": false
+}
+
+While creating an instance, you can specify a bootable storage volume as a persistent boot disk for the instance.
+
+Example 3: Restoring a Storage Volume from a Storage Snapshot
+
+While restoring a storage volume from a storage snapshot, take care of the following points:
+
+    The property value you specify for the restored volume must be compatible with the property value of the storage snapshot from which you are restoring the volume.
+
+    The size of the restored storage volume must be equal to or more than the size of the storage snapshot.
+
+    If the storage snapshot is associated with a machine image, it indicates this is a snapshot of a bootable storage volume. While restoring the storage volume from such a snapshot, specify the bootable parameter.
+
+To retrieve information about a storage snapshot, see storage-snapshots get.
+
+The following example shows how to restore a storage volume /Compute-acme/jack.jones@example.com/restored-volume1 from a storage snapshot /Compute-acme/jack.jones@example.com/vol1/264fb75d47b40dcfc91303ea16912b73fd60dd65697989281630b362e2436205.
+
+opc -f json compute storage-volumes add /Compute-acme/jack.jones@example.com/restored-volume1 /oracle/public/storage/default 20G --snapshot /Compute-acme/jack.jones@example.com/vol1/264fb75d47b40dcfc91303ea16912b73fd60dd65697989281630b362e2436205
+
+Sample Output
+
+{
+   "managed": true,
+   "status_timestamp": "2016-09-28T10:49:07Z",
+   "snapshot_account": null,
+   "machineimage_name": null,
+   "snapshot_id": "264fb75d47b40dcfc91303ea16912b73fd60dd65697989281630b362e2436205",
+   "imagelist": null,
+   "writecache": false,
+   "size": "21474836480",
+   "platform": null,
+   "storage_pool": "/uabc2z3c/lmnis09-v1_multipath/storagepool/iscsi/thruput_1",
+   "shared": false,
+   "status": "Initializing",
+   "description": null,
+   "tags": [],
+   "quota": null,
+   "status_detail": "The storage volume is currently being initialized.",
+   "properties": [
+    "/oracle/public/storage/default"
+   ],
+   "account": "/Compute-acme/default",
+   "name": "/Compute-acme/jack.jones@example.com/restored-volume1",
+   "bootable": false,
+   "hypervisor": null,
+   "uri": "http://api-z999.compute.us0.oraclecloud.com/storage/volume/Compute-acme/jack.jones@example.com/restored-volume1",
+   "imagelist_entry": -1,
+   "snapshot": "/Compute-acme/jack.jones@example.com/vol1/264fb75d47b40dcfc91303ea16912b73fd60dd65697989281630b362e2436205"
+ }
+
+storage-volumes list
+
+Retrieves details of the storage volumes that are in the specified container and match the specified query criteria. You can pass one or more query parameters to filter the search results. If you don't specify any query criteria, then details of all the storage volumes in the container are displayed.
+
+Required Role
+
+To complete this task, you must have the Compute_Monitor or Compute_Operations role. If this role isn’t assigned to you or you’re not sure, then ask your system administrator to ensure that the role is assigned to you in Oracle Cloud My Services. See Modifying User Roles in Managing and Monitoring Oracle Cloud.
+
+Syntax
+
+opc compute storage-volumes list container [--name name] [--tags tags]
+
+For help with the parameters and options of this command, run the command with the -h option.
+
+Example
+
+This command retrieves the name and size of all the storage volumes in the /Compute-acme/jack.jones@example.com container.
+
+opc -f table -F name,status compute storage-volumes list /Compute-acme/jack.jones@example.com
+
+Sample Output
+
++---------------------------------------------------------------+--------+
+                                NAME                            | STATUS 
++---------------------------------------------------------------+--------+
+ /Compute-acme/jack.jones@example.com/restoredVol1            | Error  
+ /Compute-acme/jack.jones@example.com/vol1                    | Online 
+ /Compute-acme/jack.jones@example.com/vol2                    | Online 
++---------------------------------------------------------------------+--------+
+
+storage-volumes discover
+
+Required Role
+
+To complete this task, you must have the Compute_Monitor or Compute_Operations role. If this role isn’t assigned to you or you’re not sure, then ask your system administrator to ensure that the role is assigned to you in Oracle Cloud My Services. See Modifying User Roles in Managing and Monitoring Oracle Cloud.
+
+Syntax
+
+opc compute storage-volumes discover container
+
+For help with the parameters and options of this command, run the command with the -h option.
+
+Example
+
+This command retrieves the names of the storage volumes in the /Compute-acme/jack.jones@example.com container.
+
+opc -f json compute storage-volumes discover /Compute-acme/jack.jones@example.com
+
+Sample Output
+
+{
+ "result": [
+   /Compute-acme/jack.jones@example.com/dev-vol1
+   /Compute-acme/jack.jones@example.com/dev-vol2
+   /Compute-acme/jack.jones@example.com/prod-vol1
+   /Compute-acme/jack.jones@example.com/prod-vol2
+ ]
+}
+
+storage-volumes get
+
+Retrieves information about the specified storage volume.
+
+You can use the get command to verify whether add and update operations were completed successfully. Use the -F option (for example, -F name) to filter the output for specific attributes.
+
+Required Role
+
+To complete this task, you must have the Compute_Monitor or Compute_Operations role. If this role isn’t assigned to you or you’re not sure, then ask your system administrator to ensure that the role is assigned to you in Oracle Cloud My Services. See Modifying User Roles in Managing and Monitoring Oracle Cloud.
+
+Syntax
+
+opc compute storage-volumes get name
+
+For help with the parameters and options of this command, run the command with the -h option.
+
+Example
+
+This command retrieves details of the /Compute-acme/jack.jones@example.com/dev-vol1 volume.
+
+opc -f json compute storage-volumes get /Compute-acme/jack.jones@example.com/dev-vol1
+
+Sample Output
+
+{
+   "status": "Online",
+   "account": "/Compute-acme/default",
+   "managed": true,
+   "description": null,
+   "name": "/Compute-acme/jack.jones@example.com/dev-vol1",
+   "tags": [],
+   "bootable": false,
+   "hypervisor": null,
+   "quota": "null",
+   "uri": "https://api-z999.compute.us0.oraclecloud.com/storage/volume/Compute-acme/jack.jones@example.com/dev-vol1",
+   "imagelist_entry": 0,
+   "storage_pool": "/root/storagepools/computepool",
+   "machineimage_name": null,
+   "status_timestamp": "2015-10-09T08:51:29Z",
+   "shared": false,
+   "imagelist": null,
+   "status_detail": "The storage volume is online.",
+   "writecache": false,
+   "properties": [
+    "/oracle/public/storage/default"
+   ],
+   "size": "10737418240"
+ }
+
+storage-volumes update
+
+Updates a storage volume.
+
+Although you have to pass values for several parameters, you can only increase the size of the storage volume and modify the values for the tags and description parameters. You must specify all the required fields, although these fields won't be updated.
+
+You can update an existing storage volume to increase the capacity dynamically, even when the volume is attached to an instance. After increasing the size of the storage volume that is attached and mounted on an instance, log in to the instance, and then resize the file system. See Increasing the Size of a Storage Volume in Using Oracle Compute Cloud Service (IaaS).
+
+Required Role
+
+To complete this task, you must have the Compute_Operations role. If this role isn’t assigned to you or you’re not sure, then ask your system administrator to ensure that the role is assigned to you in Oracle Cloud My Services. See Modifying User Roles in Managing and Monitoring Oracle Cloud.
+
+Syntax
+
+opc compute storage-volumes update name properties size [--description description] [--tags tags]
+
+For help with the parameters and options of this command, run the command with the -h option.
+
+Example
+
+This command updates the size of the storage volume named /Compute-acme/jack.jones@example.com/vol1 from 10 GB to 20 GB and updates the description.
+
+opc -f json compute storage-volumes update /Compute-acme/jack.jones@example.com/vol1 /oracle/public/storage/default 20G --description 'Increased storage for  Accounting Department' --tags 'Accounting Department'
+
+Sample Output
+
+{
+ "account": "/Compute-acme/default",
+ "bootable": false,
+ "description": "Increased storage for  Accounting Department",
+ "hypervisor": null,
+ "imagelist": null,
+ "imagelist_entry": -1,
+ "machineimage_name": null,
+ "managed": true,
+ "name": "/Compute-acme/jack.jones@example.com/vol1",
+ "platform": null,
+ "properties": [
+  "/oracle/public/storage/default"
+ ],
+ "quota": null,
+ "shared": false,
+ "size": "21474836480",
+ "snapshot": null,
+ "snapshot_account": null,
+ "snapshot_id": null,
+ "status": "Updating",
+ "status_detail": "The storage volume is currently being updated.",
+ "status_timestamp": "2017-02-08T16:24:29Z",
+ "storage_pool": "/ucfc2z3c/u1dis01nas09-v1_multipath/storagepool/iscsi/thruput_1",
+ "tags": [
+  "Accounting Department"
+ ],
+ "uri": "http://api-z999.compute.us0.oraclecloud.com/storage/volume/Compute-acme/jack.jones@example.com/vol1",
+ "writecache": false
+}
+
+storage-volumes delete
+
+Deletes the specified storage volume. No response is returned.
+
+Note that to delete storage volumes that are attached to instances, you must first detach them by using the storage-attachments delete command.
+
+Required Role
+
+To complete this task, you must have the Compute_Operations role. If this role isn’t assigned to you or you’re not sure, then ask your system administrator to ensure that the role is assigned to you in Oracle Cloud My Services. See Modifying User Roles in Managing and Monitoring Oracle Cloud.
+
+Syntax
+
+opc compute storage-volumes delete name
+
+For help with the parameters and options of this command, run the command with the -h option.
+
+Example
+
+This command deletes the /Compute-acme/jack.jones@example.com/vol1 volume.
+
+opc compute storage-volumes delete /Compute-acme/jack.jones@example.com/vol1
+
+
+
+export $OPC_COOKIE=`oracle-compute auth $OPC_USER /home/oracle/cloud-scripts/Cloud_passwd`
+echo $OPC_COOKIE
+##export OPC_COOKIE
+##
+## list all orchestrations in the account
+oracle-compute list orchestration $OPC_USER -Fname,status -d
+#
+SSO_RESPONSE=`curl -i -X POST \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -d '{"user":"/Compute-secdomain/user","password":"password"}' \
+        https://api-z17.compute.em2.oraclecloud.com/authenticate/	2>&1 | grep  "Set-Cookie: "	|sed -e "s/Set-Cookie: //" -e "s/Set-Cookie: //" `
+export  COMPUTE_COOKIE=$SSO_RESPONSE
+
+curl -i -X POST \
+     -H "Cookie: $COMPUTE_COOKIE" \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -H "Accept: application/oracle-compute-v3+json" \
+     -d "@V2.json" \
+        https://api-z17.compute.em2.oraclecloud.com/platform/v1/orchestration/
+
+
+curl -X GET \
+     -H "Cookie: $COMPUTE_COOKIE" \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -H "Accept: application/oracle-compute-v3+json" \
+     https://api-z17.compute.em2.oraclecloud.com/platform/v1/orchestration/Compute-secdomain/user/
+
+curl -X PUT \
+     -H "Cookie: $COMPUTE_COOKIE" \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -H "Accept: application/oracle-compute-v3+json" \
+     https://api-z17.compute.em2.oraclecloud.com/platform/v1/orchestration/Compute-secdomain/user/ES1?desired_state=suspend
+	 
+curl -X PUT \
+     -H "Cookie: $COMPUTE_COOKIE" \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -H "Accept: application/oracle-compute-v3+json" \
+     https://api-z17.compute.em2.oraclecloud.com/platform/v1/orchestration/Compute-secdomain/user/ES1?desired_state=active
+	 
+	 
+curl -X PUT \
+     -H "Cookie: $COMPUTE_COOKIE" \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -H "Accept: application/oracle-compute-v3+json" \
+     https://api-z17.compute.em2.oraclecloud.com/platform/v1/orchestration/Compute-secdomain/user/ES1?desired_state=suspend
+
+
+curl -X GET \
+     -H "Cookie: $COMPUTE_COOKIE" \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -H "Accept: application/oracle-compute-v3+json" \
+     https://api-z17.compute.em2.oraclecloud.com/platform/v1/orchestration/Compute-secdomain/user/ES
+
+curl -X GET \
+     -H "Cookie: $COMPUTE_COOKIE" \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -H "Accept: application/oracle-compute-v3+json" \
+     https://api-z17.compute.em2.oraclecloud.com/platform/v1/orchestration/Compute-secdomain/user/ES
+
+
+curl -X GET \
+     -H "Cookie: $COMPUTE_COOKIE" \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -H "Accept: application/json" \
+         https://api-z17.compute.em2.oraclecloud.com/platform/v1/orchestration/Compute-secdomain/user/simple_orchestration
+
+
+curl -X PUT \
+     -H "Cookie: $COMPUTE_COOKIE" \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -H "Accept: application/oracle-compute-v3+json" \
+     https://api-z17.compute.em2.oraclecloud.com/platform/v1/orchestration/Compute-secdomain/user/simple_orchestration?desired_state=inactive
+
+
+
+curl -X DELETE \
+     -H "Cookie: $COMPUTE_COOKIE" \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -H "Accept: application/oracle-compute-v3+json" \
+     https://api-z17.compute.em2.oraclecloud.com/platform/v1/orchestration/Compute-secdomain/user/ES?terminate=True
+
+oracle-compute add orchestration /home/oracle/cloud-scripts/V2-orch.json -d -f json
+## list all orchestrations in the account
+oracle-compute list orchestration $OPC_USER -Fname,status -d
+#

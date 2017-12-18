@@ -1,0 +1,74 @@
+{
+"description": "Simple orchestration with an instance, storage volumes, ssh key,and a security list",
+"name": "/Compute-secdomain/user/ES1",
+"desired_state": "active",
+"objects": [
+{
+"type": "StorageVolume",
+"label": "boot_volume",
+"description": "Boot disk for your instance",
+"persistent": true,
+"template": {
+"name": "/Compute-secdomain/user/BootVolume1",
+"bootable": true,
+"imagelist": "/oracle/public/OL_6.7_UEKR4_x86_64",
+"properties": [
+"/oracle/public/storage/default"
+],
+"size": "23G"
+}
+},
+{
+"type": "StorageVolume",
+"label": "data_volume",
+"description": "Data disk for your instance",
+"persistent": true,
+"template": {
+"name": "/Compute-secdomain/user/DataVolume1",
+"properties": [
+"/oracle/public/storage/default"
+],
+"size": "2G"
+}
+},
+{
+"type": "IPReservation",
+"label": "ip_reservation",
+"description": "IP reservation for your instance",
+"persistent": true,
+"template": {
+"parentpool": "/oracle/public/ippool",
+"permanent": true
+}
+},
+{
+"name": "/Compute-secdomain/user/V2",
+"type": "Instance",
+"description": "demo instance",
+"label": "demo_instance",
+"template": {
+"label": "demo_instance",
+"shape": "oc3",
+"networking": {
+"eth0": {
+"seclists": [ "/Compute-secdomain/default/default" ],
+"nat": "ipreservation:{{ip_reservation:name}}"
+}
+},
+"storage_attachments": [
+{
+"index": 1,
+"volume": "{{boot_volume:name}}"
+},
+{
+"index": 2,
+"volume": "{{data_volume:name}}"
+}
+],
+"boot_order": [1],
+"sshkeys": ["/Compute-secdomain/user/file1"]
+}
+}
+],
+"tags": ["sample"]
+}

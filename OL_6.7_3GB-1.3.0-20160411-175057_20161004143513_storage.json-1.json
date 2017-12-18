@@ -1,0 +1,41 @@
+{
+  "relationships" : [ ],
+  "account" : "/Compute-secdomain/default",
+  "description" : "",
+  "schedule" : {
+    "start_time" : "2016-10-04T12:37:55Z",
+    "stop_time" : null
+  },
+  "oplans" : [ {
+    "obj_type" : "storage/volume",
+    "ha_policy" : "",
+    "label" : "OL_6.7_3GB-1.3.0-20160411-175057_20161004143513_storage",
+    "objects" : [ {
+      "managed" : true,
+      "status_timestamp" : "2016-10-04T12:38:12Z",
+      "snapshot_account" : null,
+      "machineimage_name" : "/oracle/public/OL_6.7_3GB-1.3.0-20160411-175057",
+      "snapshot_id" : null,
+      "imagelist" : "/oracle/public/OL_6.7_3GB-1.3.0-20160411-175057",
+      "writecache" : false,
+      "size" : "4294967296",
+      "platform" : "linux",
+      "storage_pool" : "/compute-em2-z17/nleis01nas109-v1/storagepool/iscsi",
+      "shared" : false,
+      "status" : "Online",
+      "description" : "",
+      "tags" : [ ],
+      "quota" : null,
+      "properties" : [ "/oracle/public/storage/default" ],
+      "account" : "/Compute-secdomain/default",
+      "name" : "/Compute-secdomain/user/OL_6.7_3GB-1.3.0-20160411-175057_20161004143513_storage",
+      "bootable" : true,
+      "hypervisor" : null,
+      "uri" : null,
+      "imagelist_entry" : 1,
+      "snapshot" : null
+    } ]
+  } ],
+  "user" : "/Compute-secdomain/user",
+  "name" : "/Compute-secdomain/user/OL_6.7_3GB-1.3.0-20160411-175057_20161004143513_storage"
+}

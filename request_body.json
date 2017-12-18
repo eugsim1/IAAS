@@ -1,0 +1,6 @@
+{
+  "policy": "permit",
+  "outbound_cidr_policy": "permit",
+  "name": "/Compute-secdomain/user/permitall",
+  "description":"Permit access in both directions"
+}

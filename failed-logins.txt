@@ -1,0 +1,1 @@
+ grep "authentication failure" /var/log/secure | awk '{ print $13 }' | cut -b7-  | sort | uniq -c

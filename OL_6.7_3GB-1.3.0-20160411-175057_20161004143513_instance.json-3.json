@@ -1,0 +1,38 @@
+{
+  "relationships" : [ ],
+  "account" : "/Compute-secdomain/default",
+  "description" : "",
+  "schedule" : {
+    "start_time" : "2016-10-04T12:38:21Z",
+    "stop_time" : null
+  },
+  "oplans" : [ {
+    "obj_type" : "launchplan",
+    "ha_policy" : "active",
+    "label" : "OL_6.7_3GB-1.3.0-20160411-175057_20161004143513_instance",
+    "objects" : [ {
+      "instances" : [ {
+        "hostname" : "dd6b19.compute-secdomain.oraclecloud.internal.",
+        "networking" : {
+          "eth0" : {
+            "seclists" : [ "/Compute-secdomain/default/default" ],
+            "nat" : "ippool:/oracle/public/ippool"
+          }
+        },
+        "name" : "/Compute-secdomain/user/OL_6.7_3GB-1.3.0-20160411-175057_20161004143513/29a15dd7-ec7d-4336-bfac-74f63b3a52b8",
+        "boot_order" : [ 1 ],
+        "storage_attachments" : [ {
+          "volume" : "/Compute-secdomain/user/OL_6.7_3GB-1.3.0-20160411-175057_20161004143513_storage",
+          "index" : 1
+        } ],
+        "label" : "OL_6.7_3GB-1.3.0-20160411-175057_20161004143513",
+        "shape" : "oc3",
+        "imagelist" : "/oracle/public/OL_6.7_3GB-1.3.0-20160411-175057",
+        "sshkeys" : [ "/Compute-secdomain/user/adminkey" ],
+        "tags" : [ ]
+      } ]
+    } ]
+  } ],
+  "user" : "/Compute-secdomain/user",
+  "name" : "/Compute-secdomain/user/OL_6.7_3GB-1.3.0-20160411-175057_20161004143513_instance"
+}

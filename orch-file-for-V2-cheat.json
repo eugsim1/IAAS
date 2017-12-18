@@ -1,0 +1,91 @@
+{
+"description": "Simple orchestration with an instance, storage volumes, ssh key,and a security list",
+"name": "/Compute-secdomain/user/ES",
+"desired_state": "active",
+"objects": [
+{
+"type": "SSHKey",
+"label": "my_key",
+"template": {
+"enabled": true,
+"key": "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAj0mYeOf1H2eyijoBinxU78BvBJAN3OSSBXWKk678l4XerbTjUeN6iyIx/efJR99siXof0msTr+OgTn/PwfSsYD43Micst0qi9yuWCcVOf55IAbWk8uceeASz8/mhTkts40kYH7roEgQB/Og6PSDBZfIa05SdirVwfOQS8jg/o7MS1OWgGZ5VzOxsGgwtDf52ZoysqgtDPpN4CCmmDRP0PDcyc/U3c3v5MubBUBZEhwB2Qq7RdHXPS8FNs2LaLtPtRnCAOs6bFo35YDuayWAhBuRnWMOQQEetpp0RiFYDhmg0RD7iRrtOlqxcQsWcjmurAlks//cjHZxXxUQFj1NKQQ== rsa-key-20161227",
+"name": "/Compute-secdomain/user/key1"
+}
+},
+{
+"type": "SecList",
+"label": "my_seclist",
+"template": {
+"name": "/Compute-secdomain/user/my_instances"
+}
+},
+{
+"type": "StorageVolume",
+"label": "boot_volume",
+"description": "Boot disk for your instance",
+"persistent": true,
+"template": {
+"name": "/Compute-secdomain/user/BootVolume",
+"bootable": true,
+"imagelist": "/oracle/public/OL_6.7_UEKR4_x86_64",
+"properties": [
+"/oracle/public/storage/default"
+],
+"size": "23G"
+}
+},
+{
+"type": "StorageVolume",
+"label": "data_volume",
+"description": "Data disk for your instance",
+"persistent": true,
+"template": {
+"name": "/Compute-secdomain/user/DataVolume",
+"properties": [
+"/oracle/public/storage/default"
+],
+"size": "2G"
+}
+},
+{
+"type": "IPReservation",
+"label": "ip_reservation",
+"description": "IP reservation for your instance",
+"persistent": true,
+"template": {
+"parentpool": "/oracle/public/ippool",
+"permanent": true
+}
+},
+{
+"type": "Instance",
+"description": "demo instance",
+"label": "demo_instance",
+"template": {
+"label": "demo_instance",
+"shape": "oc3",
+"networking": {
+"eth0": {
+"seclists": [ "{{my_seclist:name}}" ],
+"nat": "ipreservation:{{ip_reservation:name}}"
+}
+},
+"storage_attachments": [
+{
+"index": 1,
+"volume": "{{boot_volume:name}}"
+},
+{
+"index": 2,
+"volume": "{{data_volume:name}}"
+}
+],
+"boot_order": [1],
+"sshkeys": [
+"{{my_key:name}}"
+]
+}
+}
+],
+"tags": ["sample"]
+}

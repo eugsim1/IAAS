@@ -1,0 +1,179 @@
+####
+# v1
+##
+### auth REST end point :
+### https://secdomain.storage.oraclecloud.com/auth/v1.0
+
+curl -v -X GET \
+-H "X-Storage-User: Compute-ouopc061:ora1" \
+-H "X-Storage-Pass: myPassword" \
+https://secdomain.storage.oraclecloud.com/auth/v1.0
+
+### store an object "Hello World!==> container ora1"
+curl -v -X PUT \
+     -H "X-Auth-Token: AUTH_tk209f7f2ea1265a0d3f29d28a2dc8ced6" \
+     -d "Hello, World!" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/ora1/myObject	 
+
+
+## create a container
+curl -v -X PUT \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContainer
+	 
+### accounts
+### create matadata
+curl -v -X POST \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     -H "X-Account-Meta-Owner: IT" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061
+	 
+## bulk delete containers and objects
+curl -v -X POST \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     -T objects_to_delete \
+     "https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061?bulk-delete"	 
+	 
+### account details and list container
+curl -v -X GET \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061
+
+### show account metadata
+curl -v -X HEAD \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061
+
+### create a container
+curl -v -X PUT \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContainer
+
+## create a tar archive of any files
+## upplaod the archive to the container
+curl -v -X PUT \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     "https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/BulkContainer?extract-archive=tar.gz"
+     -T bulk-test.tar.gz
+## verify the content of the container
+curl -X GET \
+     -H "X-Auth-Token: AUTH_tk1269e2899ecbc86b4402167c94bad149" \
+     "https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/BulkContainer"
+
+### create multiple containers and objects
+## create any archive of files
+## then pload the archive to the container
+curl -v -X PUT \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     "https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061?extract-archive=tar.gz"
+     -T bulk-test.tar.gz
+## verify the bulk upload operation
+curl -X GET \
+     -H "X-Auth-Token: AUTH_tk1269e2899ecbc86b4402167c94bad149" \
+     "https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/folder1"
+
+## create / delete bulk data/metadata
+## create custome metadata for the account
+curl -v -X POST \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     -H "X-Account-Meta-Owner: IT" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061
+## bulk delete
+curl -v -X POST \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     -T objects_to_delete \
+     "https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061?bulk-delete"
+
+## delete multiple containers or objects
+## create a local file with the content to be deleted
+cat objects_to_delete
+
+container1/object1
+container1/object2
+container1
+container2/object3
+container3
+
+curl -v -X DELETE \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     -H "Content-Type: text/plain" \
+     -T objects_to_delete \
+     "https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061?bulk-delete"	 
+	 
+### create / delete containers metadata
+curl -v -X POST \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     -H "X-Container-Write:myDomain.Storage.Storage_ReadWriteGroup,myDomain.myCustomRole" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContainer
+
+## delete container
+curl -v -X DELETE \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContaine
+
+## show container details and list of objects
+curl -v -X GET \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContainer
+	 
+## show container metadata
+curl -v -X HEAD \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContainer
+
+## list capabilites with open stack
+curl -v -X GET \
+     -H "X-Auth-Token: AUTH_tk209f7f2ea1265a0d3f29d28a2dc8ced6" \
+     https://foo.storage.oraclecloud.com/info
+
+### create or replace objects
+curl -v -X PUT \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     -T myFile.txt \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContainer/myObject
+
+### create or update object metadata
+curl -v -X POST \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     -H "X-Object-Meta-Language: english" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContainer/myObject
+	 
+## delete object in container
+curl -v -X DELETE \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContainer/myObject
+	 
+## get object and metadata
+curl -v -X GET \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     -o myFile.txt \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContainer/myObject
+	 
+## show objects metadata
+curl -v -X HEAD \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/FirstContainer/myObject	 
+	 
+
+	 
+	 
+	 
+$ tar -tzf bulk-test.tar.gz
+
+file1
+folder1/file2
+folder1/file3
+folder1/subfolder1
+folder1/subfolder2/file4
+folder2/file5
+
+curl -v -X PUT \
+     -H "X-Auth-Token: AUTH_tkb4fdf39c92e9f62cca9b7c196f8b6e6b" \
+     "https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/BulkContainer?extract-archive=tar.gz"
+     -T bulk-test.tar.gz
+
+
+
+curl -X GET \
+     -H "X-Auth-Token: AUTH_tk1269e2899ecbc86b4402167c94bad149" \
+     "https://secdomain.storage.oraclecloud.com/v1/Compute-ouopc061/BulkContainer"	 

@@ -1,0 +1,299 @@
+user
+Temporary Password: 	Newpassword
+Identity Domain: 	secdomain
+Data Center/Region: 	em2
+
+## install ansible
+wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+rpm -Uvh  epel-release-latest-6.noarch.rpm
+yum install ansible -y
+
+
+### install oracle compute cli
+wget --header='Host: download.oracle.com' --header='User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0' --header='Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' --header='Accept-Language: en-US,fr;q=0.8,fr-FR;q=0.5,en;q=0.3' --header='Cookie: ORA_UCM_INFO=3~5A0C6853F45D8043E040548C2670628A~Eugene~Simos~eugene.simos@oracle.com; ORASSO_AUTH_HINT=v1.0~20170627182818; s_nr=1498461744684; notice_preferences=2:cb8350a2759273dccf1e483791e6f8fd; ORA_MOS_LOCALE=en%7Cus; ORA_WWW_MRKT=v:1~g:5A0C6853F45D8043E040548C2670628A~t:EMPLOYEE~c:LP05; ORA_WWW_PERSONALIZE=v:1~i:WM148043~r:NOT_FOUND~g:EMEA~l:en~cs:WM148067~cn:NOT_FOUND; s_cc=true; gpw_e24=http%3A%2F%2Fwww.oracle.com%2Ftechnetwork%2Ftopics%2Fcloud%2Fdownloads%2Fopc-cli-3096036.html; s_sq=oracledocs%3D%2526pid%253Ddocs%25253Aen-us%25253A%25252Fcloud%25252Flatest%25252Fstcomputecs%25252Fstclr%25252Fguid-62b0b2bd-a95f-4f82-b144-8c1dba8760e9.htm%2526pidt%253D1%2526oid%253Dhttp%25253A%25252F%25252Fwww.oracle.com%25252Ftechnetwork%25252Ftopics%25252Fcloud%25252Fdownloads%25252Findex.html%252523opccli%2526ot%253DA; oraclelicense=accept-embjava-cookie; TS01e9147f=016b0445846908302b1484ea3c0caba1c3399c3edab6ab88d13ba98dc85008df7692243f0743fd995cd99cdb488639228daf91a9f4a4da55bcb714d1fa695a7ae0957a98d1496566a26c467c3606903702afe16c6b30fc06fafea7251b6bc71ff2c330187b23e22217a2f177f18df668a3ff7cb5b30ecf18535624a747af82525d9bbe9799' --header='DNT: 1' --header='Connection: keep-alive' --header='Upgrade-Insecure-Requests: 1' 'http://download.oracle.com/otn/java/cloud-service/opc-cli.17.2.2.zip?AuthParam=1498559418_8d34ce729ccab0f53c4f9d1916be7fd5' -O 'opc-cli.17.2.2.zip' -c
+rpm -qpR opc-cli-17.2.2.x86_64.rpm
+rpm -Uvh epe*
+rpm -evv opc-cli
+rpm -q  opc-cli
+
+yum install ./opc-cli*
+https://computeui.emea.oraclecloud.com/mycompute/console/instances.html
+
+oracle compute cloud service =>https://api-z17.compute.em2.oraclecloud.com/
+
+oracle storage cloud service => https://secdomain.storage.oraclecloud.com/v1/Storage-secdomain
+
+/Compute-secdomain/user
+export OPC_API="https://api-z17.compute.em2.oraclecloud.com"
+export OPC_USER=/Compute-secdomain/user
+Newpassword
+
+
+####
+## storage REST API
+https://secdomain.storage.oraclecloud.com/v1/Storage-secdomain
+https://secdomain.storage.oraclecloud.com/auth/v1.0
+
+### request authentification token
+curl -i -X POST \
+     -H "Content-Type: application/oracle-compute-v3+json" \
+     -d '{"user":"/Compute-secdomain/user","password":"Newpassword"}' \
+        https://api-z17.compute.em2.oraclecloud.com/authenticate/
+
+
+
+curl -v -s -X GET \
+      -H "X-Storage-User: Storage-secdomain:user" \
+	  -H "X-Storage-Pass: Newpassword " \
+	  https://secdomain.storage.oraclecloud.com/auth/v1.0
+	  
+	  
+	  
+< X-Auth-Token: AUTH_tk5a194054c52794b8b3a7852e1926d473
+< X-Storage-Token: AUTH_tk5a194054c52794b8b3a7852e1926d473
+< X-Storage-Url: https://em2.storage.oraclecloud.com/v1/Storage-secdomain
+
+### create container	  
+curl -v -X PUT \
+     -H "X-Auth-Token: AUTH_tk5a194054c52794b8b3a7852e1926d473" \
+     https://secdomain.storage.oraclecloud.com/v1/Storage-secdomain/FirstContainer	
+	 
+	 
+curl -v -X PUT \
+     -H "X-Auth-Token: AUTH_tk5a194054c52794b8b3a7852e1926d473" \
+     https://secdomain.storage.oraclecloud.com/v1/Storage-secdomain/FirstContainer?extract-archive=tar.gz \
+     -T oracle.tar.gz	 
+
+	 curl -v -s -X PUT -H "X-Auth-Token: AUTH_tk85388cfc91ece053145e3ff386e96552" https://storage.us2.oraclecloud.com/v1/Storage-myIdentityDomain/myFirstContainer
+
+## create objects
+url -v -X PUT \
+     -H "X-Auth-Token: AUTH_tke14c5008804e4b172beae1052f0ec3ce" \
+     -T myFile.txt \
+     https://secdomain.storage.oraclecloud.com/v1/Storage-secdomain/Storage-secdomain/FirstContainer/myObject	 
+
+### generate ssh key
+##ssh-keygen -t rsa -b 2048 -C "Cloud key eugene" -P "examplePassphrase" -f "desired pathAndName" -q 
+ssh-keygen -t rsa -b 2048 -C "Cloud key eugene" -P ""  -f  "/home/oracle/.ssh/id_rsa" -q 
+
+
+#Adds an SSH public key to Oracle Compute Cloud Service.
+oracle-compute -p /home/oracle/Cloud_passwd add sshkey /Compute-secdomain/user/adminkey ~/.ssh/id_rsa.pub -f json
+## retrieves ssh key
+oracle-compute -p /home/oracle/Cloud_passwd get sshkey /Compute-secdomain/user/adminkey -f json
+### update 
+oracle-compute -p /home/oracle/Cloud_passwd update sshkey /Compute-secdomain/user/adminkey /home/oracle/.ssh/id_rsa.pub --enabled true  -f json
+### download ssh-p /home/oracle/Cloud_passwd  public key
+oracle-compute -p /home/oracle/Cloud_passwd  download sshkey /Compute-secdomain/user/adminkey ~/adminkey
+### list ssh key
+oracle-compute -p /home/oracle/Cloud_passwd  list sshkey /Compute-secdomain/user -f json
+## deletes ssh key
+oracle-compute -p /home/oracle/Cloud_passwd delete sshkey /Compute-secdomain/user/adminkey
+
+oracle-compute -p /home/oracle/Cloud_passwd  add storagevolume /Compute-secdomain/user/dev1 10G /oracle/public/storage/default --description 'Accounting Department Block Storage' --tags 'Accounting Dept.'
+
+##The following example shows how to create a bootable storage volume by associating a storage volume with the machine image. While creating a bootable storage volume, the size of the storage volume must be at least 5% higher than the size of the machine image that you are associating with the storage volume
+oracle-compute -p /home/oracle/Cloud_passwd  add storagevolume /Compute-secdomain/user/vol2 20G /oracle/public/storage/default --description 'Accounting Department Bootable Block Storage' --tags 'Accounting Dept.' --bootable True --machineimage /Compute-secdomain/user/linux-oel-6.7-x86_64 -fjson
+
+#This command creates a security list that permits inbound and outbound traffic.
+oracle-compute -p /home/oracle/Cloud_passwd  add seclist /Compute-secdomain/user/permitall --policy permit --outbound_cidr_policy permit  --description 'Permit in both directions'
+
+#Creates an IP reservation. After creating an IP reservation, you can associate it with an instance by using the add ipassociation command
+oracle-compute -p /home/oracle/Cloud_passwd  add ipreservation --name /Compute-secdomain/user/prod1_ipres --tags production -f json
+
+{
+  "description": "Simple oplan with an ssh key and a security list",
+  "name": "/Compute-acme/joe.jonathan@example.com/simple_orchestration",
+  "oplans": [
+    {
+      "label": "simple_oplan",
+      "obj_type": "launchplan",
+      "objects": [
+        {
+          "instances": [
+            {
+              "imagelist": "/oracle/public/ol_6.6_20GB",
+              "label": "OL_6.6_20GB",
+              "networking": {
+                "eth0": {
+                  "seclists": [
+                    "/Compute-acme/joe.jonathan@example.com/my_instances"
+                  ],
+                  "nat": "ipreservation:/Compute-acme/joe.jonathan@example.com/ip1"
+                }
+              },
+              "shape": "oc3",
+              "storage_attachments": [
+                {
+                  "index": 1,
+                  "volume": "/Compute-acme/joe.jonathan@example.com/OL66_boot",
+                  
+                },
+                {
+                  "index": 2,
+                  "volume": "/Compute-acme/joe.jonathan@example.com/data1"
+                }
+              ],
+              "boot_order": [1],
+              "sshkeys": [
+                "/Compute-acme/joe.jonathan@example.com/ssh-key1"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+#add the orchestration
+oracle-compute -p /home/oracle/Cloud_passwd add orchestration /home/oracle/cloud/eugeneOL671_storage.json -f json
+oracle-compute -p /home/oracle/Cloud_passwd add orchestration /home/oracle/cloud/eugeneOL671_instance.json -f json
+oracle-compute -p /home/oracle/Cloud_passwd add orchestration /home/oracle/cloud/eugeneOL671_master.json -f json
+ 
+### start the orchestration
+oracle-compute start orchestration /Compute-secdomain/user/eugeneOL671_master.json -fjson 
+
+
+## monitor the orcherstartion
+oracle-compute get orchestration /Compute-secdomain/user/eugeneOL671_master.json -F status,description
+
+
+
+### list orchestration
+oracle-compute -p /home/oracle/Cloud_passwd list orchestration /Compute-secdomain/user -Fname,status
+
+### start orchestartion
+oracle-compute -p /home/oracle/Cloud_passwd  start orchestration /Compute-secdomain/user/OL_6.7_3GB-1.3.0-20160411-175057_20161004143513_instance -f json
+
+
+
+### list instance
+oracle-compute  -p /home/oracle/Cloud_passwd list instance /Compute-secdomain/user -F name
+
+### instance details
+oracle-compute -p /home/oracle/Cloud_passwd  get instance /Compute-secdomain/user/OL_6.7_3GB-1.3.0-20160411-175057_20161004143513/72279ff5-90dc-46be-87e9-a24069ab95d1 -f json
+
+
+
+
+140.86.34.73
+
+
+ssh opc@140.86.33.24 —i /home/oracle/.ssh/id_rsa
+
+
+#### security lists @ firewalls
+### create sec list
+oracle-compute -p /home/oracle/Cloud_passwd add seclist /Compute-secdomain/user/permitall \
+--policy permit --outbound_cidr_policy permit --description 'Permit in both directions'
+####
+## list sec lists
+oracle-compute -p /home/oracle/Cloud_passwd list seclist /Compute-secdomain/user -F name,policy,outbound_cidr_policy
+
+### delete a security list
+oracle-compute -p /home/oracle/Cloud_passwd delete seclist /Compute-secdomain/user/mytel
+
+##Creates a security IP list
+oracle-compute add seciplist /Compute-secdomain/user/sshhosts 0.0.0.0  \
+--description 'ssh hosts for the my cloud instances' -f json
+
+
+####
+oracle-compute  -p /home/oracle/Cloud_passwd get instance \
+ /Compute-secdomain/user/eugeneOL671/9a634738-b48a-453b-a082-46301d312833/02c24eee-ec82-426f-8fc7-cea9738a7f51 -F vcable_id
+ 
+##=>/Compute-secdomain/user/98437b25-c5fb-4169-a461-3ec437467505 
+### get the ip
+oracle-compute   -p /home/oracle/Cloud_passwd list ipassociation  \
+/Compute-secdomain/user \
+--vcable /Compute-secdomain/user/02ec31ea-4189-42f4-a68a-31f240aec227 --reservation -f json
+### "ip": "140.86.33.24"
+
+###
+oracle-compute  -p /home/oracle/Cloud_passwd add secassociation \
+/Compute-secdomain/user/02ec31ea-4189-42f4-a68a-31f240aec227 \
+/Compute-secdomain/user/permitall -f json
+
+
+
+
+
+oracle-compute  -p /home/oracle/Cloud_passwd add secrule /Compute-secdomain/user/publicssh \
+seciplist:/oracle/public/public-internet seclist:/Compute-secdomain/user/permitall \
+/oracle/public/ssh permit --disabled false --description 'Permit ssh traffic from the Internet to the mycloud  seclist' -f json
+
+
+### Finding Out the Public IP Address of an Instance
+#1. Find out the vcable ID of the instance.
+oracle-compute   -p /home/oracle/Cloud_passwd get instance /Compute-secdomain/user/dev2/6073c806-f7da-47eb-9678-6e618931b29a -F vcable_id
+#2. Get the IP association for the vcable ID that you noted in step 1.
+oracle-compute   -p /home/oracle/Cloud_passwd list ipassociation /Compute-secdomain/user --vcable vcable_id -f json
+
+
+
+#### instance metadata
+curl http://192.0.0.192
+1.0
+2007-01-19
+2007-03-01
+2007-08-29
+2007-10-10
+2007-12-15
+2008-02-01
+2009-04-04
+
+
+curl http://192.0.0.192/1.0/meta-data
+curl http://192.0.0.192/2007-01-19/meta-data
+curl http://192.0.0.192/2007-03-01/meta-data
+curl http://192.0.0.192/2007-08-29/meta-data
+curl http://192.0.0.192/2007-10-10/meta-data
+curl http://192.0.0.192/2007-12-15/meta-data
+curl http://192.0.0.192/2008-02-01/meta-data
+curl http://192.0.0.192/2009-04-04/meta-data
+
+mi-id
+ami-launch-index
+ami-manifest-path
+ancestor-ami-ids
+block-device-mapping
+instance-id
+instance-type
+kernel-id
+local-hostname
+local-ipv4
+placement
+product-codes
+public-hostname
+public-ipv4
+public-keys
+ramdisk-id
+reservation-id
+security-groups
+
+curl http://192.0.0.192/2007-08-29/meta-data/local-hostname
+curl http://192.0.0.192/2007-08-29/meta-data/instance-id
+curl http://192.0.0.192/2007-08-29/meta-data/instance-type
+curl http://192.0.0.192/2007-08-29/meta-data/local-hostname
+curl http://192.0.0.192/2007-08-29/meta-data/local-ipv4
+curl http://192.0.0.192/2007-08-29/meta-data/public-hostname
+curl http://192.0.0.192/2007-08-29/meta-data/public-ipv4
+curl http://192.0.0.192/2007-08-29/meta-data/security-groups
+
+
+
+### storage
+oracle-compute  -p /home/oracle/Cloud_passwd add storagevolume /Compute-secdomain/user/dev1 10G \
+/oracle/public/storage/default --description 'Accounting Department Block Storage' --tags 'Accounting Dept.'
+
+
+
+## upload files
+
+/u01/app/oracle/jdk180/jdk1.8.0_101/bin/java -jar /home/oracle/cloud/uploadcli.jar \
+-password-file /home/oracle/Cloud_passwd \
+-url https://secdomain.storage.oraclecloud.com/v1/Storage-secdomain \
+-user user  -container FirstContainer /home/oracle
+
+
+curl -I "http://localhost:8080/swagger.json"

@@ -1,0 +1,44 @@
+{
+  "relationships" : [ {
+    "to_oplan" : "eugeneOL671_storage",
+    "oplan" : "eugeneOL671_instance",
+    "type" : "depends"
+  } ],
+  "account" : "/Compute-secdomain/default",
+  "description" : "",
+  "schedule" : {
+    "start_time" : "2016-10-04T14:10:53Z",
+    "stop_time" : null
+  },
+  "oplans" : [ {
+    "obj_type" : "orchestration",
+    "ha_policy" : "",
+    "label" : "eugeneOL671_storage",
+    "objects" : [ {
+      "info" : {
+        "errors" : {
+        }
+      },
+      "status" : "ready",
+      "name" : "/Compute-secdomain/user/eugeneOL671_storage",
+      "status_timestamp" : "2016-10-04T14:11:13Z",
+      "uri" : null
+    } ]
+  }, {
+    "obj_type" : "orchestration",
+    "ha_policy" : "",
+    "label" : "eugeneOL671_instance",
+    "objects" : [ {
+      "info" : {
+        "errors" : {
+        }
+      },
+      "status" : "ready",
+      "name" : "/Compute-secdomain/user/eugeneOL671_instance",
+      "status_timestamp" : "2016-10-04T14:12:13Z",
+      "uri" : null
+    } ]
+  } ],
+  "user" : "/Compute-secdomain/user",
+  "name" : "/Compute-secdomain/user/eugeneOL671_master"
+}

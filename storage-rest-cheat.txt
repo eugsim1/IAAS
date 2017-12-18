@@ -1,0 +1,35 @@
+Storage REST end point
+
+https://secdomain.storage.oraclecloud.com/v1/Storage-secdomain
+
+Auth V1 endpoint
+https://secdomain.storage.oraclecloud.com/auth/v1.0
+
+ 
+
+
+https://em2.storage.oraclecloud.com/v1/Storage-secdomain
+
+
+## set replication policy
+
+
+### request auth token
+SSO_RESPONSE=`curl -v -X GET \
+     -H "X-Storage-User: Storage-secdomain:user" \
+     -H "X-Storage-Pass: Newpassword" \
+     https://secdomain.storage.oraclecloud.com/auth/v1.0 2>&1 | grep  "< X-Auth-Token: "	|sed -e "s/< X-Auth-Token: //" -e "s/< X-Auth-Token: //" `
+export  COMPUTE_COOKIE=$SSO_RESPONSE
+echo $COMPUTE_COOKIE
+
+### list my containers 
+curl -v -X GET \
+     -H "X-Auth-Token: $COMPUTE_COOKIE" \
+     https://secdomain.storage.oraclecloud.com/v1/Storage-secdomain?limit=100
+	 
+### create a container
+curl -v -X PUT \
+     -H "X-Auth-Token: $COMPUTE_COOKIE" \
+     https://secdomain.storage.oraclecloud.com/v1/Storage-secdomain/Eugene-FC1
+
+
